@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers")
 
 describe("Token contract", function () {
 
@@ -38,16 +39,27 @@ describe("Token contract", function () {
 
         // const hardhatToken = await Token.deploy();
 
-        const { hardhatToken, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        const { hardhatToken, owner, addr1, addr2 } = await loadFixture(deployTokenFixture);
 
         // Transfer 50 tokens from owner to addr1
         // 默认使用owner account调用合约的方法
-        await hardhatToken.transfer(addr1.address, 50);
-        expect(await hardhatToken.balanceOf(addr1.address)).to.equal(50);
+        // await hardhatToken.transfer(addr1.address, 50);
+        // expect(await hardhatToken.balanceOf(addr1.address)).to.equal(50);
 
         // Transfer 50 tokens from addr1 to addr2
         // 使用connect()方法来切换调用合约的account
-        await hardhatToken.connect(addr1).transfer(addr2.address, 50);
-        expect(await hardhatToken.balanceOf(addr2.address)).to.equal(50);
+        // await hardhatToken.connect(addr1).transfer(addr2.address, 50);
+        // expect(await hardhatToken.balanceOf(addr2.address)).to.equal(50);
+
+        // Transfer 50 tokens from owner to addr1
+        await expect(
+            hardhatToken.transfer(addr1.address, 50)
+        ).to.changeTokenBalances(hardhatToken, [owner, addr1], [-50, 50]);
+
+        // Transfer 50 tokens from addr1 to addr2
+        // We use .connect(signer) to send a transaction from another account
+        await expect(
+            hardhatToken.connect(addr1).transfer(addr2.address, 50)
+        ).to.changeTokenBalances(hardhatToken, [addr1, addr2], [-50, 50]);
     });
 });
